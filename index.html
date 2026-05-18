@@ -371,6 +371,34 @@
 
     .panel-label i { font-size: 12px; }
 
+    .btn-colar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      color: var(--gold);
+      padding: 5px 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      margin-left: auto;
+    }
+
+    .btn-colar:hover {
+      background: rgba(201,168,76,0.25);
+      border-color: var(--gold);
+      color: var(--gold-light);
+    }
+
+    .btn-colar:active { transform: scale(0.96); }
+
+    .btn-colar i { font-size: 11px; }
+
     textarea {
       width: 100%;
       height: 160px;
@@ -1014,6 +1042,10 @@
     <div class="panel-label">
       <i class="fa-solid fa-paste"></i>
       Dados de Entrada
+      <button class="btn-colar" onclick="colarDaAreaDeTransferencia()" title="Colar da área de transferência">
+        <i class="fa-solid fa-clipboard"></i>
+        Colar
+      </button>
     </div>
     <textarea id="entrada" placeholder="Cole aqui os emails e senhas...
 Exemplo:
@@ -1038,6 +1070,34 @@ outro@email.com:outrasenha"></textarea>
 
 <script>
   let plataformaSelecionada = '';
+
+  async function colarDaAreaDeTransferencia() {
+    const textarea = document.getElementById("entrada");
+    try {
+      const texto = await navigator.clipboard.readText();
+      if (texto) {
+        textarea.value = texto;
+        textarea.dispatchEvent(new Event('input'));
+        // Feedback visual no botão
+        const btn = document.querySelector('.btn-colar');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Colado!';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'var(--success)';
+        btn.style.background = 'rgba(34,197,94,0.08)';
+        setTimeout(() => {
+          btn.innerHTML = original;
+          btn.style.borderColor = '';
+          btn.style.color = '';
+          btn.style.background = '';
+        }, 1800);
+      }
+    } catch (e) {
+      // Fallback: foca no textarea para o usuário colar manualmente
+      textarea.focus();
+      alert('Permissão negada. Use Ctrl+V / Cmd+V para colar no campo abaixo.');
+    }
+  }
 
   const configs = {
     kling: {
