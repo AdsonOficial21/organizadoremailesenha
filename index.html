@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080c14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Organizador de Logins</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: rgba(201,168,76,0.15);
+      --gold-border: rgba(201,168,76,0.3);
+      --bg: #080c14;
+      --surface: #0d1422;
+      --surface2: #111927;
+      --surface3: #16202f;
+      --text: #e8eaf0;
+      --muted: #6b7a96;
+      --danger: #e84545;
+      --success: #22c55e;
+      --blue: #3b82f6;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Otimizações de toque */
+    button, [role="button"] {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* Seleção de texto: cor dourada */
+    ::selection { background: rgba(201,168,76,0.25); color: var(--gold-light); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 80% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 10% 80%, rgba(59,130,246,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════
+       TELA DE SELEÇÃO
+    ══════════════════════════════ */
+    #tela-selecao {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg);
+    }
+
+    #tela-selecao::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 10% 80%, rgba(59,130,246,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    #tela-selecao::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .selecao-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 700px;
+      text-align: center;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .selecao-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 22px;
+    }
+
+    .selecao-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 7vw, 62px);
+      letter-spacing: 4px;
+      line-height: 1.05;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #8a6a1f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .selecao-sub {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    .selecao-divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 40px;
+    }
+
+    .plataformas-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .plataformas-grid { grid-template-columns: 1fr; }
+    }
+
+    .plataforma-btn {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px;
+      padding: 28px 24px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.3s;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeUp 0.6s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .plataforma-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .plataforma-btn:hover {
+      border-color: var(--gold-border);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.15);
+      transform: translateY(-3px);
+    }
+
+    .plataforma-btn:hover::before { opacity: 1; }
+    .plataforma-btn:active { transform: translateY(0); }
+
+    .plataforma-btn:nth-child(1) { animation-delay: 0.1s; }
+    .plataforma-btn:nth-child(2) { animation-delay: 0.18s; }
+    .plataforma-btn:nth-child(3) { animation-delay: 0.26s; }
+    .plataforma-btn:nth-child(4) { animation-delay: 0.34s; }
+
+    .plat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .plat-icon.kling    { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+    .plat-icon.leonardo { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .plat-icon.nano     { background: rgba(234,179,8,0.12);  color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+    .plat-icon.hailuo   { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+
+    .plat-info { position: relative; z-index: 1; }
+
+    .plat-nome {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .plat-desc {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .plat-arrow {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold-border);
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .plataforma-btn:hover .plat-arrow {
+      color: var(--gold);
+      right: 16px;
+    }
+
+    /* ══════════════════════════════
+       TELA PRINCIPAL (oculta inicialmente)
+    ══════════════════════════════ */
+    #tela-principal {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    #tela-principal.visivel {
+      display: block;
+      opacity: 1;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    /* badge da plataforma selecionada */
+    .plat-selected-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 50px;
+      padding: 5px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .plat-selected-badge.kling    { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+    .plat-selected-badge.leonardo { background: rgba(59,130,246,0.12);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .plat-selected-badge.nano     { background: rgba(234,179,8,0.10);   color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
+    .plat-selected-badge.hailuo   { background: rgba(34,197,94,0.10);   color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+    .plat-selected-badge:hover { filter: brightness(1.2); }
+
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(38px, 8vw, 72px);
+      letter-spacing: 4px;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #8a6a1f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    .divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 18px auto 0;
+    }
+
+    .input-panel {
+      background: var(--surface);
+      border: 1px solid var(--gold-border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.7s 0.1s ease both;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(201,168,76,0.1);
+    }
+
+    .panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-label i { font-size: 12px; }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      background: var(--surface2);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea:focus {
+      border-color: var(--gold-border);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+
+    textarea::placeholder { color: var(--muted); }
+
+    .format-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .format-hint code {
+      background: var(--surface3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--gold-light);
+      font-family: monospace;
+    }
+
+    .btn-gerar {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold) 0%, #a87a20 100%);
+      color: #080c14;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 4px 24px rgba(201,168,76,0.25);
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .btn-gerar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-gerar:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.4); }
+    .btn-gerar:hover::before { opacity: 1; }
+    .btn-gerar:active { transform: translateY(0); }
+    .btn-gerar i { margin-right: 10px; }
+
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      border-radius: 12px;
+      margin-bottom: 28px;
+      font-size: 14px;
+      color: var(--gold-light);
+      font-weight: 500;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stats-bar .badge {
+      background: var(--gold);
+      color: #080c14;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 1px;
+      padding: 2px 12px;
+      border-radius: 20px;
+    }
+
+    .resultado { display: flex; flex-direction: column; gap: 20px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+      animation: fadeUp 0.5s ease both;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--gold-border);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.1);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      background: linear-gradient(90deg, var(--surface3), var(--surface2));
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-title { display: flex; align-items: center; gap: 12px; }
+
+    .card-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .creds-row {
+      display: flex;
+      gap: 12px;
+      padding: 16px 22px;
+      background: var(--surface2);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      flex-wrap: wrap;
+    }
+
+    .cred-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      flex: 1;
+      min-width: 180px;
+      overflow: hidden;
+    }
+
+    .cred-chip i { color: var(--gold); font-size: 12px; flex-shrink: 0; }
+
+    .cred-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+
+    .cred-value {
+      color: var(--text);
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-body { padding: 20px 22px; }
+
+    .texto {
+      white-space: pre-wrap;
+      line-height: 1.75;
+      font-size: 13.5px;
+      color: #b0bcd0;
+      font-weight: 300;
+    }
+
+    .btn-copiar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: transparent;
+      color: var(--text);
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.25s;
+    }
+
+    .btn-copiar:hover {
+      border-color: var(--gold-border);
+      color: var(--gold-light);
+      background: var(--gold-dim);
+    }
+
+    .btn-copiar.copiado {
+      border-color: var(--success);
+      color: var(--success);
+      background: rgba(34,197,94,0.08);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .empty i {
+      font-size: 40px;
+      color: var(--gold-border);
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .empty p { font-size: 15px; }
+
+    /* botão voltar */
+    .btn-voltar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.25s;
+      margin-bottom: 30px;
+    }
+
+    .btn-voltar:hover {
+      border-color: var(--gold-border);
+      color: var(--gold-light);
+      background: var(--gold-dim);
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(n+6) { animation-delay: 0.30s; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 3px; }
+
+    /* ══════════════════════════════
+       MOBILE — tudo abaixo de 768px
+    ══════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* ── Fundo: grid menor ── */
+      body::after { background-size: 36px 36px; }
+
+      /* ══ TELA DE SELEÇÃO ══ */
+      #tela-selecao { padding: 24px 16px; align-items: flex-start; padding-top: 52px; }
+
+      .selecao-inner { max-width: 100%; }
+
+      .selecao-badge {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        padding: 5px 14px;
+        margin-bottom: 16px;
+      }
+
+      .selecao-titulo {
+        font-size: clamp(36px, 11vw, 52px);
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+
+      .selecao-sub { font-size: 13px; margin-bottom: 6px; }
+      .selecao-divider { margin-bottom: 28px; }
+
+      /* Grid: 1 coluna em mobile */
+      .plataformas-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      /* Botões de plataforma: layout horizontal compacto */
+      .plataforma-btn {
+        flex-direction: row;
+        align-items: center;
+        padding: 16px 18px;
+        border-radius: 16px;
+        gap: 14px;
+      }
+
+      .plat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .plat-info { flex: 1; }
+
+      .plat-nome { font-size: 20px; letter-spacing: 1.5px; margin-bottom: 2px; }
+      .plat-desc { font-size: 11px; line-height: 1.4; }
+
+      .plat-arrow {
+        position: static;
+        transform: none;
+        font-size: 13px;
+        flex-shrink: 0;
+        margin-left: auto;
+        color: var(--gold-border);
+      }
+
+      .plataforma-btn:hover .plat-arrow { right: auto; }
+
+      /* ══ TELA PRINCIPAL ══ */
+      .wrapper { padding: 20px 14px 100px; }
+
+      /* Botão voltar: mais compacto, sticky top */
+      .btn-voltar {
+        position: sticky;
+        top: 12px;
+        z-index: 10;
+        margin-bottom: 20px;
+        padding: 10px 16px;
+        font-size: 12px;
+        border-radius: 50px;
+        background: rgba(8,12,20,0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-color: var(--gold-border);
+        color: var(--gold-light);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      }
+
+      /* Header */
+      header { margin-bottom: 24px; }
+
+      .logo-badge {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        padding: 5px 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        line-height: 1.6;
+      }
+
+      .plat-selected-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+        margin-left: 0;
+      }
+
+      header h1 {
+        font-size: clamp(34px, 10vw, 52px);
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+
+      header p { font-size: 13px; }
+
+      /* Painel de input */
+      .input-panel {
+        padding: 18px 16px;
+        border-radius: 16px;
+        margin-bottom: 14px;
+      }
+
+      .panel-label { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+      textarea {
+        height: 130px;
+        font-size: 13px;
+        padding: 12px;
+        border-radius: 10px;
+        /* Impede zoom automático no iOS */
+        font-size: max(16px, 13px);
+      }
+
+      .format-hint { font-size: 11px; flex-wrap: wrap; }
+
+      /* Botão gerar */
+      .btn-gerar {
+        padding: 16px;
+        font-size: 18px;
+        letter-spacing: 2px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        /* Botão fixo na parte inferior em mobile */
+        position: sticky;
+        bottom: 16px;
+        z-index: 10;
+        box-shadow: 0 8px 32px rgba(201,168,76,0.35), 0 0 0 1px rgba(201,168,76,0.2);
+      }
+
+      /* Stats bar */
+      .stats-bar {
+        padding: 12px 16px;
+        font-size: 13px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        gap: 10px;
+      }
+
+      /* Cards */
+      .card { border-radius: 16px; }
+
+      .card-header {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .card-title { gap: 8px; }
+
+      .card-num { font-size: 22px; }
+
+      .card-tag {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+      }
+
+      /* Botão copiar: ocupa linha inteira no mobile */
+      .btn-copiar {
+        width: 100%;
+        justify-content: center;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        /* Feedback tátil via escala */
+        transition: all 0.2s, transform 0.1s;
+      }
+
+      .btn-copiar:active { transform: scale(0.97); }
+
+      /* Chips de credenciais: empilhar verticalmente */
+      .creds-row {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 16px;
+      }
+
+      .cred-chip {
+        min-width: unset;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+      }
+
+      .cred-label { font-size: 9px; }
+      .cred-value { font-size: 13px; }
+
+      .card-body { padding: 14px 16px 18px; }
+
+      .texto {
+        font-size: 13px;
+        line-height: 1.8;
+      }
+
+      /* Empty state */
+      .empty { padding: 40px 16px; }
+      .empty i { font-size: 32px; margin-bottom: 12px; }
+      .empty p { font-size: 14px; }
+
+      /* Stats badge */
+      .stats-bar .badge { font-size: 16px; padding: 2px 10px; }
+    }
+
+    /* ── Telas muito pequenas (< 360px) ── */
+    @media (max-width: 360px) {
+      .selecao-titulo { font-size: 32px; }
+      header h1 { font-size: 30px; }
+      .btn-gerar { font-size: 16px; letter-spacing: 1.5px; }
+      .plat-nome { font-size: 18px; }
+    }
+
+    /* ── Safe area para iPhone com notch/Dynamic Island ── */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      @media (max-width: 768px) {
+        .btn-gerar {
+          bottom: calc(16px + env(safe-area-inset-bottom));
+        }
+        .wrapper {
+          padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        }
+        #tela-selecao {
+          padding-bottom: calc(24px + env(safe-area-inset-bottom));
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     TELA DE SELEÇÃO DE PLATAFORMA
+════════════════════════════════ -->
+<div id="tela-selecao">
+  <div class="selecao-inner">
+    <div class="selecao-badge">
+      <i class="fa-solid fa-layer-group"></i>
+      Ferramenta de Distribuição
+    </div>
+    <div class="selecao-titulo">Selecione a<br>Plataforma</div>
+    <p class="selecao-sub">Escolha o modelo para gerar os textos de acesso</p>
+    <div class="selecao-divider"></div>
+
+    <div class="plataformas-grid">
+
+      <button class="plataforma-btn" onclick="selecionarPlataforma('kling')">
+        <div class="plat-icon kling"><i class="fa-solid fa-film"></i></div>
+        <div class="plat-info">
+          <div class="plat-nome">Kling</div>
+          <div class="plat-desc">Geração de vídeo via Leonardo AI</div>
+        </div>
+        <i class="fa-solid fa-arrow-right plat-arrow"></i>
+      </button>
+
+      <button class="plataforma-btn" onclick="selecionarPlataforma('leonardo')">
+        <div class="plat-icon leonardo"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="plat-info">
+          <div class="plat-nome">Leonardo</div>
+          <div class="plat-desc">Acesso direto ao Leonardo AI</div>
+        </div>
+        <i class="fa-solid fa-arrow-right plat-arrow"></i>
+      </button>
+
+      <button class="plataforma-btn" onclick="selecionarPlataforma('nano')">
+        <div class="plat-icon nano"><i class="fa-solid fa-image"></i></div>
+        <div class="plat-info">
+          <div class="plat-nome">Nano Banana</div>
+          <div class="plat-desc">Geração de imagem — modelo Nano Banana Pro</div>
+        </div>
+        <i class="fa-solid fa-arrow-right plat-arrow"></i>
+      </button>
+
+      <button class="plataforma-btn" onclick="selecionarPlataforma('hailuo')">
+        <div class="plat-icon hailuo"><i class="fa-solid fa-video"></i></div>
+        <div class="plat-info">
+          <div class="plat-nome">Hailuo</div>
+          <div class="plat-desc">Geração de vídeo via Hailuo AI</div>
+        </div>
+        <i class="fa-solid fa-arrow-right plat-arrow"></i>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TELA PRINCIPAL
+════════════════════════════════ -->
+<div id="tela-principal">
+<div class="wrapper">
+
+  <button class="btn-voltar" onclick="voltarSelecao()">
+    <i class="fa-solid fa-arrow-left"></i>
+    Trocar plataforma
+  </button>
+
+  <header>
+    <div class="logo-badge">
+      <i class="fa-solid fa-key"></i>
+      Ferramenta de Distribuição
+      <span id="badge-plataforma" class="plat-selected-badge"></span>
+    </div>
+    <h1>Organizador<br>de Logins</h1>
+    <p>Cole os dados brutos e gere os textos prontos para envio</p>
+    <div class="divider"></div>
+  </header>
+
+  <div class="input-panel">
+    <div class="panel-label">
+      <i class="fa-solid fa-paste"></i>
+      Dados de Entrada
+    </div>
+    <textarea id="entrada" placeholder="Cole aqui os emails e senhas...
+Exemplo:
+usuario@email.com:senha123
+outro@email.com:outrasenha"></textarea>
+    <div class="format-hint">
+      <i class="fa-solid fa-circle-info"></i>
+      Formato aceito: <code>email:senha</code> — um por linha ou separado por espaço
+    </div>
+  </div>
+
+  <button class="btn-gerar" onclick="gerarTextos()">
+    <i class="fa-solid fa-bolt"></i>
+    Gerar Textos
+  </button>
+
+  <div id="contador"></div>
+  <div class="resultado" id="resultado"></div>
+
+</div>
+</div>
+
+<script>
+  let plataformaSelecionada = '';
+
+  const configs = {
+    kling: {
+      label: 'Kling',
+      classe: 'kling',
+      icone: 'fa-film',
+      tag: 'Kling AI',
+      gerarTexto: (email, senha) => `📩 E-mail: ${email}
+
+🔑 Senha: ${senha}
+
+1️⃣ Acesse o site (app.leonardo.ai)
+
+2️⃣ Clique em (Sign Up) ou (Sign In)
+
+3️⃣ Irá aparecer as opções (Canva), (Apple), (Google), (Microsoft) e (Continue with Email).
+➡️ Escolha a opção (Canva)
+
+4️⃣ Em seguida, irão aparecer as opções (Continuar com o Google), (Continuar com o Facebook) e (Continuar com e-mail).
+➡️ Escolha (Continuar com e-mail)
+
+5️⃣ Digite o e-mail informado acima e clique em (Continuar)
+
+6️⃣ Digite a senha informada acima e clique em (Continuar)
+
+7️⃣ Clique em "Vídeo"
+
+8️⃣ No canto superior esquerdo, clique em "Model" e selecione "Kling".
+
+🎥 Vídeo como usar o Kling AI:
+https://youtu.be/sKmufQ_JjYg
+
+Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie. Sua avaliação é extremamente importante para aprimorarmos nossos serviços.
+
+Agradecemos desde já! 🙌`
+    },
+
+    leonardo: {
+      label: 'Leonardo',
+      classe: 'leonardo',
+      icone: 'fa-wand-magic-sparkles',
+      tag: 'Leonardo AI',
+      gerarTexto: (email, senha) => `📩 E-mail: ${email}
+
+🔑 Senha: ${senha}
+
+1️⃣ Acesse o site (app.leonardo.ai)
+
+2️⃣ Clique em (Sign Up) ou (Sign In)
+
+3️⃣ Irá aparecer as opções (Canva), (Apple), (Google), (Microsoft) e (Continue with Email).
+➡️ Escolha a opção (Canva)
+
+4️⃣ Em seguida, irão aparecer as opções (Continuar com o Google), (Continuar com o Facebook) e (Continuar com e-mail).
+➡️ Escolha (Continuar com e-mail)
+
+5️⃣ Digite o e-mail informado acima e clique em (Continuar)
+
+6️⃣ Digite a senha informada acima e clique em (Continuar)
+
+🎥 Vídeo como usar o Leonardo AI:
+https://youtu.be/dqgkQTE34Mg
+
+Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie. Seu feedback é extremamente importante para aprimorarmos nossos serviços.
+
+Agradecemos desde já! 🙌`
+    },
+
+    nano: {
+      label: 'Nano Banana',
+      classe: 'nano',
+      icone: 'fa-image',
+      tag: 'Nano Banana Pro',
+      gerarTexto: (email, senha) => `📩 E-mail: ${email}
+
+🔑 Senha: ${senha}
+
+1️⃣ Acesse o site (app.leonardo.ai)
+
+2️⃣ Clique em (Sign Up) ou (Sign In)
+
+3️⃣ Irá aparecer as opções (Canva), (Apple), (Google), (Microsoft) e (Continue with Email).
+➡️ Escolha a opção (Canva)
+
+4️⃣ Em seguida, irão aparecer as opções (Continuar com o Google), (Continuar com o Facebook) e (Continuar com e-mail).
+➡️ Escolha (Continuar com e-mail)
+
+5️⃣ Digite o e-mail informado acima e clique em (Continuar)
+
+6️⃣ Digite a senha informada acima e clique em (Continuar)
+
+7️⃣ Clique em "Image"
+
+8️⃣ No canto superior esquerdo, clique em "Model" e selecione o modelo (Nano Banana Pro)
+
+🎥 Vídeo como usar o Nano Banana PRO:
+https://www.youtube.com/shorts/dqgkQTE34Mg
+
+Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie. Sua avaliação é extremamente importante para aprimorarmos nossos serviços.
+
+Agradecemos desde já! 🙌`
+    },
+
+    hailuo: {
+      label: 'Hailuo',
+      classe: 'hailuo',
+      icone: 'fa-video',
+      tag: 'Hailuo AI',
+      gerarTexto: (email, senha) => `📩 E-mail: ${email}
+
+🔑 Senha: ${senha}
+
+1️⃣ Acesse o site (app.leonardo.ai)
+
+2️⃣ Clique em (Sign Up) ou (Sign In)
+
+3️⃣ Irá aparecer as opções (Canva), (Apple), (Google), (Microsoft) e (Continue with Email).
+➡️ Escolha a opção (Canva)
+
+4️⃣ Em seguida, irão aparecer as opções (Continuar com o Google), (Continuar com o Facebook) e (Continuar com e-mail).
+➡️ Escolha (Continuar com e-mail)
+
+5️⃣ Digite o e-mail informado acima e clique em (Continuar)
+
+6️⃣ Digite a senha informada acima e clique em (Continuar)
+
+7️⃣ Clique em "Vídeo"
+
+8️⃣ No canto superior esquerdo, clique em "Model" e selecione "Hailuo".
+
+🎥 Vídeo como usar o Hailuo AI:
+https://www.youtube.com/shorts/2gLVnFCXRpc
+
+Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie. Seu feedback é extremamente importante para aprimorarmos nossos serviços.
+
+Agradecemos desde já! 🙌`
+    }
+  };
+
+  function selecionarPlataforma(plat) {
+    plataformaSelecionada = plat;
+    const cfg = configs[plat];
+
+    // atualiza badge
+    const badge = document.getElementById('badge-plataforma');
+    badge.className = 'plat-selected-badge ' + cfg.classe;
+    badge.innerHTML = `<i class="fa-solid ${cfg.icone}"></i> ${cfg.label}`;
+
+    // limpa resultado anterior
+    document.getElementById('resultado').innerHTML = '';
+    document.getElementById('contador').innerHTML = '';
+    document.getElementById('entrada').value = '';
+
+    // esconde seleção, mostra principal
+    const selecao = document.getElementById('tela-selecao');
+    selecao.style.opacity = '0';
+    selecao.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => {
+      selecao.style.display = 'none';
+      const principal = document.getElementById('tela-principal');
+      principal.style.display = 'block';
+      requestAnimationFrame(() => {
+        principal.style.opacity = '1';
+      });
+    }, 300);
+  }
+
+  function voltarSelecao() {
+    // Limpa estado salvo ao trocar de plataforma
+    sessionStorage.removeItem('ol_plataforma');
+    sessionStorage.removeItem('ol_entrada');
+
+    const principal = document.getElementById('tela-principal');
+    principal.style.transition = 'opacity 0.3s ease';
+    principal.style.opacity = '0';
+    setTimeout(() => {
+      principal.style.display = 'none';
+      const selecao = document.getElementById('tela-selecao');
+      selecao.style.display = 'flex';
+      selecao.style.opacity = '0';
+      selecao.style.transition = 'opacity 0.3s ease';
+      requestAnimationFrame(() => {
+        selecao.style.opacity = '1';
+      });
+    }, 300);
+  }
+
+  function gerarTextos() {
+    const entrada = document.getElementById("entrada").value.trim();
+    const resultado = document.getElementById("resultado");
+    const contador = document.getElementById("contador");
+    const cfg = configs[plataformaSelecionada];
+
+    resultado.innerHTML = "";
+    contador.innerHTML = "";
+
+    if (!entrada) {
+      resultado.innerHTML = `
+        <div class="empty">
+          <i class="fa-solid fa-inbox"></i>
+          <p>Nenhum login encontrado. Cole os dados acima e clique em Gerar.</p>
+        </div>`;
+      return;
+    }
+
+    // Extrai todos os pares email+senha do texto (suporta formato WhatsApp e email:senha)
+    const pares = [];
+    // Regex: encontra email (tem @) seguido diretamente de qualquer texto até próximo email ou fim
+    const emailRegex = /([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g;
+    const matches = [...entrada.matchAll(emailRegex)];
+
+    matches.forEach((match, i) => {
+      const email = match[1];
+      const inicio = match.index + email.length;
+      const fim = matches[i + 1] ? matches[i + 1].index : entrada.length;
+      // Senha é o bloco de texto entre o fim do email e o início do próximo email
+      // Remove espaços, quebras, timestamps, nomes de usuário WhatsApp etc.
+      let bloco = entrada.slice(inicio, fim);
+      // Remove padrões de timestamp WhatsApp: [dd/mm/aaaa hh:mm] Nome:
+      bloco = bloco.replace(/\[\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}\]\s*[^\[]+?:/g, ' ');
+      // Remove caracteres não-senha (espaços, quebras, letras que parecem nomes)
+      // A senha é o primeiro token sem espaços após o email
+      const tokens = bloco.trim().split(/\s+/);
+      const senha = tokens[0] || '';
+      if (email && senha) pares.push({ email, senha });
+    });
+
+    // Fallback: tenta formato clássico email:senha se nenhum email foi encontrado
+    if (!pares.length) {
+      const lista = entrada.split(/\s+/).filter(item => item.includes(":") && item.includes("@"));
+      lista.forEach(item => {
+        const idx = item.indexOf(":");
+        const email = item.slice(0, idx);
+        const senha = item.slice(idx + 1);
+        if (email && senha) pares.push({ email, senha });
+      });
+    }
+
+    const lista = pares;
+
+    if (!lista.length) {
+      resultado.innerHTML = `
+        <div class="empty">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <p>Formato inválido. Nenhum e-mail encontrado nos dados colados.</p>
+        </div>`;
+      return;
+    }
+
+    contador.innerHTML = `
+      <div class="stats-bar">
+        <i class="fa-solid fa-layer-group" style="color:var(--gold)"></i>
+        <span>Logins encontrados:</span>
+        <span class="badge">${lista.length}</span>
+      </div>`;
+
+    lista.forEach((item, index) => {
+      const email = item.email;
+      const senha = item.senha;
+      const texto = cfg.gerarTexto(email, senha);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-num">#${String(index + 1).padStart(2, "0")}</span>
+            <span class="card-tag">${cfg.tag}</span>
+          </div>
+          <button class="btn-copiar">
+            <i class="fa-regular fa-copy"></i>
+            Copiar texto
+          </button>
+        </div>
+        <div class="creds-row">
+          <div class="cred-chip">
+            <i class="fa-solid fa-envelope"></i>
+            <span class="cred-label">E-mail</span>
+            <span class="cred-value">${email}</span>
+          </div>
+          <div class="cred-chip">
+            <i class="fa-solid fa-lock"></i>
+            <span class="cred-label">Senha</span>
+            <span class="cred-value">${senha}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="texto">${texto}</div>
+        </div>`;
+
+      const botao = card.querySelector(".btn-copiar");
+      botao.addEventListener("click", () => {
+        copiarTexto(texto, botao);
+      });
+
+      resultado.appendChild(card);
+    });
+
+    // Salva estado no sessionStorage para persistir ao recarregar
+    salvarEstado();
+  }
+
+  function copiarTexto(texto, botao) {
+    function marcarCopiado() {
+      document.querySelectorAll(".btn-copiar").forEach(b => {
+        b.innerHTML = `<i class="fa-regular fa-copy"></i> Copiar texto`;
+        b.classList.remove("copiado");
+      });
+      botao.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+      botao.classList.add("copiado");
+    }
+
+    // iOS Safari: Clipboard API assíncrona perde o contexto de toque e é bloqueada.
+    // Única técnica 100% confiável no iOS é execCommand síncrono com elemento visível.
+    const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      copiarIOS(texto, marcarCopiado);
+      return;
+    }
+
+    // Android / Desktop: Clipboard API moderna com fallback execCommand
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(marcarCopiado).catch(() => {
+        copiarExecCommand(texto, marcarCopiado);
+      });
+    } else {
+      copiarExecCommand(texto, marcarCopiado);
+    }
+  }
+
+  function copiarIOS(texto, callback) {
+    // No iOS o elemento precisa existir no DOM, ter foco e estar dentro da viewport.
+    // Usamos 1x1px transparente no canto superior — invisível mas presente.
+    const el = document.createElement("textarea");
+    el.value = texto;
+    el.setAttribute("readonly", "");
+    el.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:none;outline:none;background:transparent;color:transparent;font-size:16px;opacity:0;z-index:-1;";
+    document.body.appendChild(el);
+    el.focus();
+
+    // iOS exige setSelectionRange após o foco
+    el.setSelectionRange(0, texto.length);
+
+    // Garante seleção via getSelection também
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+    el.setSelectionRange(0, texto.length);
+
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { /* silencia */ }
+
+    if (sel) sel.removeAllRanges();
+    document.body.removeChild(el);
+    if (ok) callback();
+  }
+
+  function copiarExecCommand(texto, callback) {
+    const el = document.createElement("textarea");
+    el.value = texto;
+    el.setAttribute("readonly", "");
+    el.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;";
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    el.setSelectionRange(0, texto.length);
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { /* silencia */ }
+    document.body.removeChild(el);
+    if (ok) callback();
+  }
+
+  // ── Persistência via sessionStorage ──────────────────────────────
+  function salvarEstado() {
+    const entrada = document.getElementById("entrada").value;
+    sessionStorage.setItem("ol_plataforma", plataformaSelecionada);
+    sessionStorage.setItem("ol_entrada", entrada);
+  }
+
+  function restaurarEstado() {
+    const plat = sessionStorage.getItem("ol_plataforma");
+    const entrada = sessionStorage.getItem("ol_entrada");
+
+    if (!plat) return; // Nada salvo, exibe seleção normalmente
+
+    // Restaura plataforma (sem limpar resultado)
+    plataformaSelecionada = plat;
+    const cfg = configs[plat];
+
+    const badge = document.getElementById("badge-plataforma");
+    badge.className = "plat-selected-badge " + cfg.classe;
+    badge.innerHTML = `<i class="fa-solid ${cfg.icone}"></i> ${cfg.label}`;
+
+    // Mostra tela principal diretamente
+    document.getElementById("tela-selecao").style.display = "none";
+    const principal = document.getElementById("tela-principal");
+    principal.style.display = "block";
+    principal.style.opacity = "1";
+
+    // Restaura texto de entrada
+    if (entrada) {
+      document.getElementById("entrada").value = entrada;
+      // Re-gera os textos automaticamente
+      gerarTextos();
+    }
+  }
+
+  // Restaura ao carregar a página
+  window.addEventListener("DOMContentLoaded", restaurarEstado);
+
+  // Salva sempre que o usuário digita no textarea
+  document.getElementById("entrada").addEventListener("input", () => {
+    if (plataformaSelecionada) salvarEstado();
+  });
+</script>
+
+</body>
+</html>
