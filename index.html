@@ -672,28 +672,91 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--muted);
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-light);
       padding: 8px 16px;
-      border-radius: 10px;
+      border-radius: 50px;
       cursor: pointer;
       font-family: 'Outfit', sans-serif;
       font-size: 13px;
       font-weight: 500;
       transition: all 0.25s;
       margin-bottom: 30px;
+      position: sticky;
+      top: 16px;
+      z-index: 10;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
     .btn-voltar:hover {
-      border-color: var(--gold-border);
+      border-color: var(--gold);
       color: var(--gold-light);
-      background: var(--gold-dim);
+      background: rgba(201,168,76,0.15);
     }
 
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-20px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══════════════════════════════
+       BOTÃO VOLTAR AO TOPO
+    ══════════════════════════════ */
+    #btn-topo {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      z-index: 999;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, #a87a20 100%);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.35), 0 2px 8px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px) scale(0.85);
+      transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    #btn-topo.visivel {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    #btn-topo:hover {
+      box-shadow: 0 6px 28px rgba(201,168,76,0.55), 0 2px 8px rgba(0,0,0,0.4);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    #btn-topo:active {
+      transform: translateY(0) scale(0.95);
+    }
+
+    #btn-topo i {
+      font-size: 18px;
+      color: #080c14;
+      line-height: 1;
+    }
+
+    @media (max-width: 480px) {
+      #btn-topo {
+        bottom: 20px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+      }
+      #btn-topo i { font-size: 16px; }
     }
 
     @keyframes fadeUp {
@@ -783,21 +846,12 @@
       /* ══ TELA PRINCIPAL ══ */
       .wrapper { padding: 20px 14px 100px; }
 
-      /* Botão voltar: mais compacto, sticky top */
+      /* Botão voltar: mais compacto em mobile */
       .btn-voltar {
-        position: sticky;
         top: 12px;
-        z-index: 10;
         margin-bottom: 20px;
         padding: 10px 16px;
         font-size: 12px;
-        border-radius: 50px;
-        background: rgba(8,12,20,0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-color: var(--gold-border);
-        color: var(--gold-light);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       }
 
       /* Header */
@@ -1548,6 +1602,32 @@ Agradecemos desde já! 🙌`
   document.getElementById("entrada").addEventListener("input", () => {
     if (plataformaSelecionada) salvarEstado();
   });
+</script>
+
+<!-- Botão Voltar ao Topo -->
+<button id="btn-topo" title="Voltar ao topo" aria-label="Voltar ao topo">
+  <i class="fa-solid fa-chevron-up"></i>
+</button>
+
+<script>
+  (function () {
+    const btn = document.getElementById('btn-topo');
+    const THRESHOLD = 300; // pixels de scroll para aparecer
+
+    function onScroll() {
+      if (window.scrollY > THRESHOLD) {
+        btn.classList.add('visivel');
+      } else {
+        btn.classList.remove('visivel');
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
 </script>
 
 </body>
