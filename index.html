@@ -109,7 +109,7 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 700px;
+      max-width: 900px;
       text-align: center;
       animation: fadeDown 0.7s ease both;
     }
@@ -160,6 +160,17 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
+    }
+
+    /* Desktop: 3 colunas para os 5 cards */
+    @media (min-width: 640px) {
+      .plataformas-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      /* 5º item (Seedance) sozinho: centraliza */
+      .plataforma-btn:last-child:nth-child(3n + 1) {
+        grid-column: 2 / 3;
+      }
     }
 
     @media (max-width: 480px) {
@@ -221,6 +232,7 @@
     .plat-icon.leonardo { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
     .plat-icon.nano     { background: rgba(234,179,8,0.12);  color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
     .plat-icon.hailuo   { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .plat-icon.seedance { background: rgba(251,113,133,0.12); color: #fb7185; border: 1px solid rgba(251,113,133,0.25); }
 
     .plat-info { position: relative; z-index: 1; }
 
@@ -318,6 +330,7 @@
     .plat-selected-badge.leonardo { background: rgba(59,130,246,0.12);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
     .plat-selected-badge.nano     { background: rgba(234,179,8,0.10);   color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
     .plat-selected-badge.hailuo   { background: rgba(34,197,94,0.10);   color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .plat-selected-badge.seedance { background: rgba(251,113,133,0.10); color: #fb7185; border: 1px solid rgba(251,113,133,0.3); }
 
     .plat-selected-badge:hover { filter: brightness(1.2); }
 
@@ -1437,6 +1450,15 @@
         <i class="fa-solid fa-arrow-right plat-arrow"></i>
       </button>
 
+      <button class="plataforma-btn" onclick="selecionarPlataforma('seedance')">
+        <div class="plat-icon seedance"><i class="fa-solid fa-clapperboard"></i></div>
+        <div class="plat-info">
+          <div class="plat-nome">Seedance</div>
+          <div class="plat-desc">Geração de vídeo via Leonardo AI</div>
+        </div>
+        <i class="fa-solid fa-arrow-right plat-arrow"></i>
+      </button>
+
     </div>
   </div>
 </div>
@@ -1664,6 +1686,41 @@ Agradecemos desde já! 🙌`
 https://www.youtube.com/shorts/2gLVnFCXRpc
 
 Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie. Seu feedback é extremamente importante para aprimorarmos nossos serviços.
+
+Agradecemos desde já! 🙌`
+    },
+
+    seedance: {
+      label: 'Seedance',
+      classe: 'seedance',
+      icone: 'fa-clapperboard',
+      tag: 'Seedance',
+      gerarTexto: (email, senha) => `📩 E-mail: ${email}
+
+🔑 Senha: ${senha}
+
+1️⃣ Acesse o site (app.leonardo.ai)
+
+2️⃣ Clique em (Sign Up) ou (Sign In)
+
+3️⃣ Irá aparecer as opções (Canva), (Apple), (Google), (Microsoft) e (Continue with Email).
+➡️ Escolha a opção (Canva)
+
+4️⃣ Em seguida, irão aparecer as opções (Continuar com o Google), (Continuar com o Facebook) e (Continuar com e-mail).
+➡️ Escolha (Continuar com e-mail)
+
+5️⃣ Digite o e-mail informado acima e clique em (Continuar)
+
+6️⃣ Digite a senha informada acima e clique em (Continuar)
+
+7️⃣ Clique em "Vídeo"
+
+8️⃣ No canto superior esquerdo, clique em "Model" e selecione o modelo desejado.
+
+🎥 Vídeo como usar o Seedance: https://www.youtube.com/shorts/-Bo8EU6q0dg
+
+Após realizar o login e verificar todas as informações, pedimos, por gentileza, que nos avalie.
+Sua avaliação é extremamente importante para aprimorarmos nossos serviços.
 
 Agradecemos desde já! 🙌`
     }
