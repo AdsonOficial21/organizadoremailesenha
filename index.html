@@ -1011,6 +1011,377 @@
         }
       }
     }
+
+    /* ══════════════════════════════
+       BARRA DE NAVEGAÇÃO RÁPIDA (inline sticky abaixo do botão)
+    ══════════════════════════════ */
+    #nav-rapida {
+      display: none;
+      position: static;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    #nav-rapida.visivel { display: block; }
+
+    .nav-rapida-inner {
+      background: rgba(8, 12, 20, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--gold-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,168,76,0.08);
+      padding: 14px 16px;
+    }
+
+    .nav-rapida-header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .nav-rapida-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .nav-rapida-label i { font-size: 9px; }
+
+    .nav-rapida-count {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .nav-rapida-count span {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .nav-rapida-sep {
+      width: 1px;
+      height: 32px;
+      background: var(--gold-border);
+      flex-shrink: 0;
+    }
+
+    .nav-nums-scroll {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 6px;
+      flex: 1;
+      padding: 3px 2px;
+    }
+
+    .nav-num-btn {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 19px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      padding: 0 4px;
+    }
+
+    .nav-num-btn:hover {
+      background: var(--gold-dim);
+      border-color: var(--gold-border);
+      color: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(201,168,76,0.25);
+    }
+
+    .nav-num-btn:active {
+      transform: scale(0.90);
+    }
+
+    .nav-num-btn.copiado-nav {
+      background: rgba(34,197,94,0.12) !important;
+      border-color: rgba(34,197,94,0.4) !important;
+      color: var(--success) !important;
+    }
+
+    .nav-num-btn.copiado-nav::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .nav-num-btn.flash-nav {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      color: var(--gold-light);
+      box-shadow: 0 0 18px rgba(201,168,76,0.4);
+    }
+
+    /* tooltip "Copiado!" flutuante sobre o botão */
+    .nav-num-btn .nav-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.85);
+      background: var(--gold);
+      color: #080c14;
+      font-family: 'Outfit', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      padding: 4px 10px;
+      border-radius: 7px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s, transform 0.15s;
+      z-index: 10;
+    }
+
+    .nav-num-btn .nav-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: var(--gold);
+    }
+
+    .nav-num-btn.show-tip .nav-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* progresso copiados à direita */
+    .nav-progresso {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-prog-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    .nav-prog-bar-wrap {
+      width: 48px;
+      height: 4px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .nav-prog-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    @media (max-width: 768px) {
+      #nav-rapida {
+        top: 10px;
+        margin-bottom: 18px;
+      }
+      .nav-rapida-inner {
+        padding: 10px 12px;
+        gap: 10px;
+        border-radius: 14px;
+      }
+      .nav-num-btn { width: 100%; height: 42px; font-size: 17px; border-radius: 11px; }
+      .nav-rapida-inner .nav-nums-scroll {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    /* ══════════════════════════════
+       POPUP "JÁ COPIADO"
+    ══════════════════════════════ */
+    #popup-ja-copiado {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(4, 7, 14, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #popup-ja-copiado.visivel {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .popup-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--gold-border);
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.1);
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #popup-ja-copiado.visivel .popup-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .popup-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .popup-icon-wrap i {
+      font-size: 28px;
+      color: var(--gold);
+    }
+
+    .popup-icon-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid var(--gold-border);
+      opacity: 0.4;
+    }
+
+    .popup-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 60%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+
+    .popup-desc {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .popup-badge-copiado {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 50px;
+      padding: 5px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--success);
+      letter-spacing: 0.5px;
+      margin-bottom: 32px;
+    }
+
+    .popup-badge-copiado i { font-size: 11px; }
+
+    .popup-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+      margin: 0 auto 28px;
+    }
+
+    .popup-btn-fechar {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold) 0%, #a87a20 100%);
+      color: #080c14;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .popup-btn-fechar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(201,168,76,0.45);
+    }
+
+    .popup-btn-fechar:active { transform: scale(0.97); }
+
+    .popup-hint {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 480px) {
+      .popup-card {
+        padding: 36px 24px 32px;
+        border-radius: 20px;
+      }
+      .popup-titulo { font-size: 26px; }
+      .popup-icon-wrap { width: 60px; height: 60px; margin-bottom: 18px; }
+      .popup-icon-wrap i { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -1115,6 +1486,13 @@ outro@email.com:outrasenha"></textarea>
     <i class="fa-solid fa-bolt"></i>
     Gerar Textos
   </button>
+
+  <!-- BARRA DE NAVEGAÇÃO RÁPIDA (sticky abaixo do botão) -->
+  <div id="nav-rapida">
+    <div class="nav-rapida-inner">
+      <div class="nav-nums-scroll" id="nav-nums"></div>
+    </div>
+  </div>
 
   <div id="contador"></div>
   <div class="resultado" id="resultado"></div>
@@ -1328,6 +1706,10 @@ Agradecemos desde já! 🙌`
       localStorage.removeItem(`ol_copiados_${plataformaSelecionada}`);
     }
 
+    // Esconde a barra de navegação rápida
+    const navRapida = document.getElementById("nav-rapida");
+    navRapida.classList.remove("visivel");
+
     const principal = document.getElementById('tela-principal');
     principal.style.transition = 'opacity 0.3s ease';
     principal.style.opacity = '0';
@@ -1358,6 +1740,7 @@ Agradecemos desde já! 🙌`
           <i class="fa-solid fa-inbox"></i>
           <p>Nenhum login encontrado. Cole os dados acima e clique em Gerar.</p>
         </div>`;
+      document.getElementById("nav-rapida").classList.remove("visivel");
       return;
     }
 
@@ -1402,6 +1785,7 @@ Agradecemos desde já! 🙌`
           <i class="fa-solid fa-triangle-exclamation"></i>
           <p>Formato inválido. Nenhum e-mail encontrado nos dados colados.</p>
         </div>`;
+      document.getElementById("nav-rapida").classList.remove("visivel");
       return;
     }
 
@@ -1470,8 +1854,136 @@ Agradecemos desde já! 🙌`
       }
     });
 
+    // ── Monta a barra de navegação rápida ──────────────────────────
+    construirNavRapida(lista, copiados);
+
     // Salva estado no sessionStorage para persistir ao recarregar
     salvarEstado();
+  }
+
+  function mostrarAvisoJaCopiado(btn) {
+    const popup = document.getElementById("popup-ja-copiado");
+    if (!popup) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { popup.classList.add("visivel"); });
+    });
+  }
+
+  function fecharPopupJaCopiado() {
+    const popup = document.getElementById("popup-ja-copiado");
+    if (!popup) return;
+    popup.classList.remove("visivel");
+  }
+
+  function atualizarProgressoNav() {
+    const btns = document.querySelectorAll(".nav-num-btn");
+    const total = btns.length;
+    const copiados = document.querySelectorAll(".nav-num-btn.copiado-nav").length;
+    const pct = total ? Math.round((copiados / total) * 100) : 0;
+
+    const elCount = document.getElementById("nav-copiados-count");
+    const elTotal = document.getElementById("nav-total-count");
+    const elPct   = document.getElementById("nav-prog-pct");
+    const elBar   = document.getElementById("nav-prog-bar");
+
+    if (elCount) elCount.textContent = copiados;
+    if (elTotal) elTotal.textContent = total;
+    if (elPct)   elPct.textContent   = pct + "%";
+    if (elBar)   elBar.style.width   = pct + "%";
+  }
+
+  function construirNavRapida(lista, copiadosIniciais) {
+    const navRapida = document.getElementById("nav-rapida");
+    const navNums   = document.getElementById("nav-nums");
+    navNums.innerHTML = "";
+
+    if (!lista || !lista.length) {
+      navRapida.classList.remove("visivel");
+      return;
+    }
+
+    lista.forEach((item, index) => {
+      const cfg = configs[plataformaSelecionada];
+      const texto = cfg.gerarTexto(item.email, item.senha);
+
+      const btn = document.createElement("button");
+      btn.className = "nav-num-btn";
+      btn.dataset.navIndex = String(index);
+      btn.title = `Copiar login #${index + 1}`;
+      btn.innerHTML = `${index + 1}<span class="nav-tooltip">Copiado!</span>`;
+
+      // Marca os já copiados
+      if (copiadosIniciais.includes(String(index))) {
+        btn.classList.add("copiado-nav");
+      }
+
+      btn.addEventListener("click", () => {
+        const cardEl = document.querySelector(`[data-card-index="${index}"]`);
+        const botaoCard = cardEl ? cardEl.querySelector(".btn-copiar") : null;
+        const jaCopiado = btn.classList.contains("copiado-nav");
+
+        // Fica verde imediatamente ao clicar
+        if (!jaCopiado) {
+          btn.classList.add("copiado-nav");
+          atualizarProgressoNav();
+        }
+
+        function onCopied() {
+          // Flash dourado de confirmação + tooltip
+          btn.classList.add("flash-nav", "show-tip");
+          setTimeout(() => {
+            btn.classList.remove("flash-nav", "show-tip");
+          }, 800);
+
+          // Scroll suave até o card
+          if (cardEl) {
+            const navEl = document.getElementById("nav-rapida");
+            const navH  = navEl ? navEl.offsetHeight + 12 : 80;
+            const top = cardEl.getBoundingClientRect().top + window.scrollY - navH;
+            window.scrollTo({ top, behavior: "smooth" });
+          }
+        }
+
+        // Se já foi copiado, mostra aviso mas copia mesmo assim
+        if (jaCopiado) {
+          mostrarAvisoJaCopiado(btn);
+        }
+
+        copiarTexto(texto, onCopied);
+
+        // Sincroniza o estado visual do botão do card sem disparar click (evita cópia dupla)
+        if (botaoCard && !botaoCard.classList.contains("copiado")) {
+          botaoCard.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+          botaoCard.classList.add("copiado");
+          if (cardEl) {
+            cardEl.classList.add("ja-copiado");
+            const cardIndex = cardEl.dataset.cardIndex;
+            if (cardIndex !== undefined) {
+              const chave = `ol_copiados_${plataformaSelecionada}`;
+              const copiados = JSON.parse(localStorage.getItem(chave) || "[]");
+              if (!copiados.includes(cardIndex)) {
+                copiados.push(cardIndex);
+                localStorage.setItem(chave, JSON.stringify(copiados));
+              }
+            }
+          }
+        }
+      });
+
+      navNums.appendChild(btn);
+    });
+
+    navRapida.classList.add("visivel");
+    atualizarProgressoNav();
+  }
+
+  // Sincroniza o estado copiado do card com o botão do nav
+  function sincronizarNavCopiado(cardIndex) {
+    const btn = document.querySelector(`.nav-num-btn[data-nav-index="${cardIndex}"]`);
+    if (btn) {
+      btn.classList.add("copiado-nav");
+      atualizarProgressoNav();
+    }
   }
 
   function copiarTexto(texto, botao) {
@@ -1493,6 +2005,8 @@ Agradecemos desde já! 🙌`
             copiados.push(cardIndex);
             localStorage.setItem(chave, JSON.stringify(copiados));
           }
+          // Sincroniza botão do nav
+          sincronizarNavCopiado(cardIndex);
         }
       }
     }
@@ -1603,6 +2117,29 @@ Agradecemos desde já! 🙌`
     if (plataformaSelecionada) salvarEstado();
   });
 </script>
+
+<!-- ══════════════════════════════
+     POPUP "JÁ COPIADO"
+════════════════════════════════ -->
+<div id="popup-ja-copiado">
+  <div class="popup-card">
+    <div class="popup-icon-wrap">
+      <i class="fa-solid fa-rotate-right"></i>
+    </div>
+    <div class="popup-titulo">Já Copiado!</div>
+    <p class="popup-desc">Este login já foi copiado anteriormente.<br>O conteúdo foi copiado novamente com sucesso.</p>
+    <div class="popup-badge-copiado">
+      <i class="fa-solid fa-check"></i>
+      Copiado para a área de transferência
+    </div>
+    <div class="popup-divider"></div>
+    <button class="popup-btn-fechar" onclick="fecharPopupJaCopiado()">
+      <i class="fa-solid fa-xmark"></i>
+      Fechar
+    </button>
+
+  </div>
+</div>
 
 <!-- Botão Voltar ao Topo -->
 <button id="btn-topo" title="Voltar ao topo" aria-label="Voltar ao topo">
