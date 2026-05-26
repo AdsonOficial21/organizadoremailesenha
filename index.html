@@ -1770,6 +1770,34 @@
 
     .popup-hist-btn-fechar:active { transform: scale(0.97); }
 
+    .popup-hist-btn-gerar {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold) 0%, #a87a20 100%);
+      color: #080c14;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .popup-hist-btn-gerar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(201,168,76,0.45);
+    }
+
+    .popup-hist-btn-gerar:active { transform: scale(0.97); }
+
     @media (max-width: 480px) {
       .popup-hist-card {
         padding: 32px 20px 28px;
@@ -2281,7 +2309,7 @@ Agradecemos desde já! 🙌`
       });
     }
     if (repetidosFirebase.length > 0) {
-      mostrarPopupHistoricoFirebase(repetidosFirebase);
+      mostrarPopupHistoricoFirebase(repetidosFirebase, lista);
       return;
     }
     // ── Fim verificação histórico Firebase ─────────────────────────
@@ -2399,9 +2427,13 @@ Agradecemos desde já! 🙌`
     popup.classList.remove("visivel");
   }
 
-  function mostrarPopupHistoricoFirebase(itens) {
+  // Guarda a lista pendente para caso o usuário queira gerar mesmo assim
+  let _listaPendenteFirebase = null;
+
+  function mostrarPopupHistoricoFirebase(itens, listaPendente) {
     const popup = document.getElementById("popup-historico-firebase");
     if (!popup) return;
+    _listaPendenteFirebase = listaPendente || null;
     const lista = document.getElementById("popup-hist-itens");
     if (lista) {
       lista.innerHTML = itens.map(d =>
@@ -2417,6 +2449,93 @@ Agradecemos desde já! 🙌`
     const popup = document.getElementById("popup-historico-firebase");
     if (!popup) return;
     popup.classList.remove("visivel");
+  }
+
+  function gerarMesmoAssim() {
+    fecharPopupHistoricoFirebase();
+    if (!_listaPendenteFirebase || !_listaPendenteFirebase.length) return;
+
+    const lista = _listaPendenteFirebase;
+    _listaPendenteFirebase = null;
+    const cfg = configs[plataformaSelecionada];
+    const resultado = document.getElementById("resultado");
+    const contador = document.getElementById("contador");
+
+    // Salva no Firebase mesmo assim
+    lista.forEach(item => {
+      if (window.salvarNoFirebase) {
+        window.salvarNoFirebase(item.email, item.senha);
+      }
+    });
+
+    contador.innerHTML = `
+      <div class="stats-bar">
+        <i class="fa-solid fa-layer-group" style="color:var(--gold)"></i>
+        <span>Logins encontrados:</span>
+        <span class="badge">${lista.length}</span>
+      </div>`;
+
+    resultado.innerHTML = "";
+
+    lista.forEach((item, index) => {
+      const email = item.email;
+      const senha = item.senha;
+      const texto = cfg.gerarTexto(email, senha);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.cardIndex = String(index);
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-num">#${String(index + 1).padStart(2, "0")}</span>
+            <span class="card-tag">${cfg.tag}</span>
+          </div>
+          <button class="btn-copiar">
+            <i class="fa-regular fa-copy"></i>
+            Copiar texto
+          </button>
+        </div>
+        <div class="creds-row">
+          <div class="cred-chip">
+            <i class="fa-solid fa-envelope"></i>
+            <span class="cred-label">E-mail</span>
+            <span class="cred-value">${email}</span>
+          </div>
+          <div class="cred-chip">
+            <i class="fa-solid fa-lock"></i>
+            <span class="cred-label">Senha</span>
+            <span class="cred-value">${senha}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="texto">${texto}</div>
+        </div>`;
+
+      const botao = card.querySelector(".btn-copiar");
+      botao.addEventListener("click", () => {
+        copiarTexto(texto, botao);
+      });
+
+      resultado.appendChild(card);
+    });
+
+    const chave = `ol_copiados_${plataformaSelecionada}`;
+    const copiados = JSON.parse(localStorage.getItem(chave) || "[]");
+    copiados.forEach(idx => {
+      const cardEl = resultado.querySelector(`[data-card-index="${idx}"]`);
+      if (cardEl) {
+        cardEl.classList.add("ja-copiado");
+        const btn = cardEl.querySelector(".btn-copiar");
+        if (btn) {
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+          btn.classList.add("copiado");
+        }
+      }
+    });
+
+    construirNavRapida(lista, copiados);
+    salvarEstado();
   }
   function atualizarProgressoNav() {
     const btns = document.querySelectorAll(".nav-num-btn");
@@ -2655,9 +2774,15 @@ Agradecemos desde já! 🙌`
   // Restaura ao carregar a página
   window.addEventListener("DOMContentLoaded", restaurarEstado);
 
-  // Salva sempre que o usuário digita no textarea
+  // Gera e salva automaticamente ao colar/digitar no textarea
+  let _debounceGerar = null;
   document.getElementById("entrada").addEventListener("input", () => {
-    if (plataformaSelecionada) salvarEstado();
+    if (!plataformaSelecionada) return;
+    salvarEstado();
+    clearTimeout(_debounceGerar);
+    _debounceGerar = setTimeout(() => {
+      gerarTextos();
+    }, 300);
   });
 </script>
 
@@ -2727,10 +2852,16 @@ Agradecemos desde já! 🙌`
       <div id="popup-hist-itens"></div>
     </div>
     <div class="popup-hist-divider"></div>
-    <button class="popup-hist-btn-fechar" onclick="fecharPopupHistoricoFirebase()">
-      <i class="fa-solid fa-xmark"></i>
-      Fechar e corrigir
-    </button>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button class="popup-hist-btn-fechar" onclick="fecharPopupHistoricoFirebase()">
+        <i class="fa-solid fa-xmark"></i>
+        Fechar e corrigir
+      </button>
+      <button class="popup-hist-btn-gerar" onclick="gerarMesmoAssim()">
+        <i class="fa-solid fa-bolt"></i>
+        Gerar mesmo assim
+      </button>
+    </div>
   </div>
 </div>
 
