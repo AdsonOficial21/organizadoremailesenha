@@ -11,6 +11,72 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzBp2PNA0BexJY0Yx03sBfJbt02Alfa_k",
+      authDomain: "organizar-email-e-senha.firebaseapp.com",
+      databaseURL: "https://organizar-email-e-senha-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "organizar-email-e-senha",
+      storageBucket: "organizar-email-e-senha.firebasestorage.app",
+      messagingSenderId: "370753661832",
+      appId: "1:370753661832:web:40a6b68a306e36e4f2e83d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Expõe funções globais para uso pelo restante do código
+    window._fbDb = db;
+    window._fbRef = ref;
+    window._fbGet = get;
+    window._fbSet = set;
+    window._fbChild = child;
+
+    // Carrega o histórico do Firebase na inicialização
+    window._fbHistoricoCarregado = false;
+    window._fbHistoricoEmails = new Set();
+    window._fbHistoricoSenhas = new Set();
+
+    async function carregarHistorico() {
+      try {
+        const snapshot = await get(ref(db, 'historico'));
+        if (snapshot.exists()) {
+          const dados = snapshot.val();
+          Object.values(dados).forEach(item => {
+            if (item.email) window._fbHistoricoEmails.add(item.email.toLowerCase());
+            if (item.senha) window._fbHistoricoSenhas.add(item.senha.toLowerCase());
+          });
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar histórico Firebase:', e);
+      }
+      window._fbHistoricoCarregado = true;
+    }
+
+    carregarHistorico();
+
+    // Salva um par email+senha no Firebase
+    window.salvarNoFirebase = async function(email, senha) {
+      try {
+        const chave = btoa(email.toLowerCase()).replace(/[.#$/\[\]]/g, '_');
+        await set(ref(db, 'historico/' + chave), {
+          email: email.toLowerCase(),
+          senha: senha.toLowerCase(),
+          plataforma: window._plataformaSelecionadaAtual || '',
+          timestamp: Date.now()
+        });
+        window._fbHistoricoEmails.add(email.toLowerCase());
+        window._fbHistoricoSenhas.add(senha.toLowerCase());
+      } catch (e) {
+        console.warn('Erro ao salvar no Firebase:', e);
+      }
+    };
+  </script>
+
   <style>
     :root {
       --gold: #c9a84c;
@@ -1538,6 +1604,181 @@
       .popup-icon-wrap { width: 60px; height: 60px; margin-bottom: 18px; }
       .popup-icon-wrap i { font-size: 22px; }
     }
+
+    /* ══════════════════════════════
+       POPUP HISTÓRICO FIREBASE
+    ══════════════════════════════ */
+    #popup-historico-firebase {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(4, 7, 14, 0.92);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #popup-historico-firebase.visivel {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .popup-hist-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid rgba(232,69,69,0.5);
+      border-radius: 24px;
+      padding: 44px 36px 36px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 40px rgba(232,69,69,0.1);
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #popup-historico-firebase.visivel .popup-hist-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .popup-hist-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(232,69,69,0.1);
+      border: 1px solid rgba(232,69,69,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 22px;
+      position: relative;
+    }
+
+    .popup-hist-icon::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(232,69,69,0.2);
+    }
+
+    .popup-hist-icon i {
+      font-size: 28px;
+      color: var(--danger);
+    }
+
+    .popup-hist-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      letter-spacing: 3px;
+      color: var(--danger);
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+
+    .popup-hist-desc {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .popup-hist-lista {
+      background: var(--surface2);
+      border: 1px solid rgba(232,69,69,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .popup-hist-lista-titulo {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--danger);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .popup-hist-item {
+      font-size: 12px;
+      color: #b0bcd0;
+      font-family: monospace;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .popup-hist-item:last-child { border-bottom: none; }
+
+    .popup-hist-item i {
+      color: var(--danger);
+      font-size: 10px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .popup-hist-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,69,69,0.4), transparent);
+      margin: 0 auto 24px;
+    }
+
+    .popup-hist-btn-fechar {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #e84545 0%, #b02020 100%);
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 4px 24px rgba(232,69,69,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .popup-hist-btn-fechar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232,69,69,0.45);
+    }
+
+    .popup-hist-btn-fechar:active { transform: scale(0.97); }
+
+    @media (max-width: 480px) {
+      .popup-hist-card {
+        padding: 32px 20px 28px;
+        border-radius: 20px;
+      }
+      .popup-hist-titulo { font-size: 24px; }
+      .popup-hist-icon { width: 60px; height: 60px; }
+      .popup-hist-icon i { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -1667,6 +1908,10 @@ outro@email.com:outrasenha"></textarea>
 
 <script>
   let plataformaSelecionada = '';
+  // Expõe para o módulo Firebase
+  Object.defineProperty(window, '_plataformaSelecionadaAtual', {
+    get: () => plataformaSelecionada
+  });
 
   async function colarDaAreaDeTransferencia() {
     const textarea = document.getElementById("entrada");
@@ -1925,7 +2170,7 @@ Agradecemos desde já! 🙌`
     }, 300);
   }
 
-  function gerarTextos() {
+  async function gerarTextos() {
     const entrada = document.getElementById("entrada").value.trim();
     const resultado = document.getElementById("resultado");
     const contador = document.getElementById("contador");
@@ -2020,6 +2265,33 @@ Agradecemos desde já! 🙌`
       return;
     }
     // ── Fim verificação de duplicatas ──────────────────────────────
+
+    // ── Verifica histórico no Firebase ────────────────────────────
+    const repetidosFirebase = [];
+    if (window._fbHistoricoCarregado) {
+      lista.forEach((item) => {
+        const emailLower = item.email.toLowerCase();
+        const senhaLower = item.senha.toLowerCase();
+        if (window._fbHistoricoEmails.has(emailLower)) {
+          repetidosFirebase.push(`E-mail já usado anteriormente: "${item.email}"`);
+        }
+        if (window._fbHistoricoSenhas.has(senhaLower)) {
+          repetidosFirebase.push(`Senha já usada anteriormente: "${item.senha}"`);
+        }
+      });
+    }
+    if (repetidosFirebase.length > 0) {
+      mostrarPopupHistoricoFirebase(repetidosFirebase);
+      return;
+    }
+    // ── Fim verificação histórico Firebase ─────────────────────────
+
+    // Salva os pares gerados no Firebase (em background)
+    lista.forEach(item => {
+      if (window.salvarNoFirebase) {
+        window.salvarNoFirebase(item.email, item.senha);
+      }
+    });
 
     contador.innerHTML = `
       <div class="stats-bar">
@@ -2127,6 +2399,25 @@ Agradecemos desde já! 🙌`
     popup.classList.remove("visivel");
   }
 
+  function mostrarPopupHistoricoFirebase(itens) {
+    const popup = document.getElementById("popup-historico-firebase");
+    if (!popup) return;
+    const lista = document.getElementById("popup-hist-itens");
+    if (lista) {
+      lista.innerHTML = itens.map(d =>
+        `<div class="popup-hist-item"><i class="fa-solid fa-circle-exclamation"></i>${d}</div>`
+      ).join('');
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { popup.classList.add("visivel"); });
+    });
+  }
+
+  function fecharPopupHistoricoFirebase() {
+    const popup = document.getElementById("popup-historico-firebase");
+    if (!popup) return;
+    popup.classList.remove("visivel");
+  }
   function atualizarProgressoNav() {
     const btns = document.querySelectorAll(".nav-num-btn");
     const total = btns.length;
@@ -2412,6 +2703,31 @@ Agradecemos desde já! 🙌`
     </div>
     <div class="popup-dup-divider"></div>
     <button class="popup-dup-btn-fechar" onclick="fecharPopupDuplicados()">
+      <i class="fa-solid fa-xmark"></i>
+      Fechar e corrigir
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     POPUP HISTÓRICO FIREBASE
+════════════════════════════════ -->
+<div id="popup-historico-firebase">
+  <div class="popup-hist-card">
+    <div class="popup-hist-icon">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+    </div>
+    <div class="popup-hist-titulo">Já Utilizado Antes!</div>
+    <p class="popup-hist-desc">Um ou mais dados abaixo já foram gerados e enviados anteriormente.<br>Verifique o histórico e utilize credenciais diferentes.</p>
+    <div class="popup-hist-lista">
+      <div class="popup-hist-lista-titulo">
+        <i class="fa-solid fa-database"></i>
+        Encontrado no histórico
+      </div>
+      <div id="popup-hist-itens"></div>
+    </div>
+    <div class="popup-hist-divider"></div>
+    <button class="popup-hist-btn-fechar" onclick="fecharPopupHistoricoFirebase()">
       <i class="fa-solid fa-xmark"></i>
       Fechar e corrigir
     </button>
