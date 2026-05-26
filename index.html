@@ -789,6 +789,149 @@
     ::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 3px; }
 
     /* ══════════════════════════════
+       POPUP DUPLICADOS
+    ══════════════════════════════ */
+    #popup-duplicados {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #popup-duplicados.visivel {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .popup-dup-card {
+      background: var(--surface);
+      border: 1px solid rgba(232,69,69,0.4);
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,69,69,0.15);
+      animation: fadeDown 0.3s ease both;
+      position: relative;
+    }
+
+    .popup-dup-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(232,69,69,0.12);
+      border: 1px solid rgba(232,69,69,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: var(--danger);
+      margin: 0 auto 20px;
+    }
+
+    .popup-dup-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--danger);
+      margin-bottom: 12px;
+    }
+
+    .popup-dup-desc {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .popup-dup-lista {
+      background: var(--surface2);
+      border: 1px solid rgba(232,69,69,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .popup-dup-lista-titulo {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--danger);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .popup-dup-item {
+      font-size: 12px;
+      color: #b0bcd0;
+      font-family: monospace;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .popup-dup-item:last-child { border-bottom: none; }
+
+    .popup-dup-item i {
+      color: var(--danger);
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    .popup-dup-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,69,69,0.3), transparent);
+      margin-bottom: 20px;
+    }
+
+    .popup-dup-btn-fechar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(232,69,69,0.12);
+      border: 1px solid rgba(232,69,69,0.35);
+      color: var(--danger);
+      padding: 12px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.25s;
+      width: 100%;
+    }
+
+    .popup-dup-btn-fechar:hover {
+      background: rgba(232,69,69,0.22);
+      border-color: var(--danger);
+    }
+
+    @media (max-width: 480px) {
+      .popup-dup-card { padding: 28px 20px; }
+      .popup-dup-titulo { font-size: 24px; }
+    }
+
+    /* ══════════════════════════════
        MOBILE — tudo abaixo de 768px
     ══════════════════════════════ */
     @media (max-width: 768px) {
@@ -1846,6 +1989,38 @@ Agradecemos desde já! 🙌`
       return;
     }
 
+    // ── Verifica duplicatas de email ou senha ──────────────────────
+    const emailsSeen = new Map();
+    const senhasSeen = new Map();
+    const duplicatas = [];
+
+    lista.forEach((item, i) => {
+      const emailLower = item.email.toLowerCase();
+      const senhaLower = item.senha.toLowerCase();
+
+      if (emailsSeen.has(emailLower)) {
+        const orig = emailsSeen.get(emailLower);
+        const descr = `E-mail duplicado: "${item.email}" (linhas ${orig + 1} e ${i + 1})`;
+        if (!duplicatas.find(d => d === descr)) duplicatas.push(descr);
+      } else {
+        emailsSeen.set(emailLower, i);
+      }
+
+      if (senhasSeen.has(senhaLower)) {
+        const orig = senhasSeen.get(senhaLower);
+        const descr = `Senha duplicada: "${item.senha}" (linhas ${orig + 1} e ${i + 1})`;
+        if (!duplicatas.find(d => d === descr)) duplicatas.push(descr);
+      } else {
+        senhasSeen.set(senhaLower, i);
+      }
+    });
+
+    if (duplicatas.length > 0) {
+      mostrarPopupDuplicados(duplicatas);
+      return;
+    }
+    // ── Fim verificação de duplicatas ──────────────────────────────
+
     contador.innerHTML = `
       <div class="stats-bar">
         <i class="fa-solid fa-layer-group" style="color:var(--gold)"></i>
@@ -1928,6 +2103,26 @@ Agradecemos desde já! 🙌`
 
   function fecharPopupJaCopiado() {
     const popup = document.getElementById("popup-ja-copiado");
+    if (!popup) return;
+    popup.classList.remove("visivel");
+  }
+
+  function mostrarPopupDuplicados(duplicatas) {
+    const popup = document.getElementById("popup-duplicados");
+    if (!popup) return;
+    const lista = document.getElementById("popup-dup-itens");
+    if (lista) {
+      lista.innerHTML = duplicatas.map(d =>
+        `<div class="popup-dup-item"><i class="fa-solid fa-circle-exclamation"></i>${d}</div>`
+      ).join('');
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { popup.classList.add("visivel"); });
+    });
+  }
+
+  function fecharPopupDuplicados() {
+    const popup = document.getElementById("popup-duplicados");
     if (!popup) return;
     popup.classList.remove("visivel");
   }
@@ -2195,6 +2390,31 @@ Agradecemos desde já! 🙌`
       Fechar
     </button>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     POPUP DUPLICADOS
+════════════════════════════════ -->
+<div id="popup-duplicados">
+  <div class="popup-dup-card">
+    <div class="popup-dup-icon">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div class="popup-dup-titulo">Dados Duplicados!</div>
+    <p class="popup-dup-desc">Foram encontrados e-mails ou senhas repetidos na lista.<br>Corrija os dados antes de gerar os textos.</p>
+    <div class="popup-dup-lista">
+      <div class="popup-dup-lista-titulo">
+        <i class="fa-solid fa-list"></i>
+        Duplicatas encontradas
+      </div>
+      <div id="popup-dup-itens"></div>
+    </div>
+    <div class="popup-dup-divider"></div>
+    <button class="popup-dup-btn-fechar" onclick="fecharPopupDuplicados()">
+      <i class="fa-solid fa-xmark"></i>
+      Fechar e corrigir
+    </button>
   </div>
 </div>
 
